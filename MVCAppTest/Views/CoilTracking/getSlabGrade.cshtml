@@ -1,0 +1,84 @@
+﻿@model MVCAppTest.Models.CoilTracking
+@{
+    ViewBag.Title = "getSlabGrade";
+}
+
+<h2>getSlabGrade</h2>
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+
+<script>
+    var cachedSlabGrades = null;
+    $(document).ready(function () {
+        $('.chkclass').click(function () {
+            var getchkid = $(this).attr('id');
+            var isChecked = $('#' + getchkid).is(':checked');
+            if ($('#' + getchkid).is(':checked') == true) {
+                $('#td' + $(this).val()).css("color", "white");
+                $('#td' + $(this).val()).css("background-color", "blue");
+            }
+            else {
+                $('#td' + $(this).val()).css("color", "black");
+                $('#td' + $(this).val()).css("background-color", "white");
+            }
+        });
+
+        $('input:checkbox').on("change", function () {
+            alert($(this).attr('value'));
+        });
+
+        $('#bttn_Click').click(function () {
+            var studentListVal = null;
+            studentListVal = [];
+            var slabGrades;
+
+            $('input:checkbox:checked').each(function () {
+                studentListVal.push($(this).attr('value'));
+            });
+            $.ajax({
+                type: "post",
+                url: "/CoilTracking/DisplaySlabGrades",
+                data: { grades: studentListVal },
+                datatype: "json",
+                traditional: true,
+                success: function (data) {
+                    if (cachedSlabGrades == null) {
+                        cachedSlabGrades = data;
+                        slabGrades = data;
+                    } else {
+                        slabGrades = cachedSlabGrades;
+                    }
+                    var selectedIds;
+                    for (var i = 0; i < slabGrades.success.length; i++) {
+                        if (selectedIds != undefined) {
+                            selectedIds = selectedIds + " " + slabGrades.success[i];
+                        }
+                        else {
+                            selectedIds = slabGrades.success[i];
+                        }
+                    }
+                    alert('You have Selected Student Ids- ' + selectedIds);
+                }
+            });
+        });
+    });
+</script>
+<div id="divStudentlist" style="height: 100px; overflow: auto;border:solid; width:150px;">
+    @foreach (var grades in @Model.SlabGrade)
+    {
+        var checkBoxId = "chk" + grades.Value;
+        var tdId = "t   d" + grades.Value;
+        <table width="100%">
+            <tr>
+                <td width="20px">
+                    <input type="checkbox" id="@checkBoxId" class="chkclass" value="@grades.Text" />
+                </td>
+                <td id="@tdId" width="100px">
+                    @grades.Text
+                </td>
+            </tr>
+        </table>
+    }
+</div>
+<div>
+    <input type="button" id="bttn_Click" value="Send Checked value to Controller" />
+</div>
